@@ -1,6 +1,5 @@
 """imports"""
 import asyncio
-import json
 import os
 import uuid
 from datetime import datetime, timedelta
@@ -14,10 +13,12 @@ try:
     from llm.execute_tool import execute_tool
     from llm.delete_old_entries import delete_old_entries
     from llm.extract_content import extract_content
+    from llm.process_tool_calls import process_tool_calls
 except ImportError:
     from execute_tool import execute_tool
     from delete_old_entries import delete_old_entries
     from extract_content import extract_content
+    from process_tool_calls import process_tool_calls
 
 # suppress warnings
 os.environ["TOKENS_PARALLELISM"] = "false"
@@ -72,23 +73,7 @@ async def run(model_name=model, user_input=""):
 
     tool_responses = []
 
-    # Process tool calls if they exist
-    if isinstance(response, dict) and 'tool_calls' in response['message']:
-        for tool_call in response['tool_calls']:
-            try:
-                tool_name = tool_call['function']['name']
-                tool_args = json.loads(tool_call['function']['arguments'])
-                tool_response = await execute_tool(tool_name, tool_args)
-                tool_responses.append({
-                    "tool_name": tool_name,
-                    "result": tool_response
-                })
-            except Exception as e:
-                print(f"Error executing tool {tool_name}: {str(e)}")
-                tool_responses.append({
-                    "tool_name": tool_name,
-                    "error": str(e)
-                })
+    tool_responses = await process_tool_calls(response)
 
     # Construct final message including tool responses
     final_message = message.copy()
@@ -120,6 +105,7 @@ async def run(model_name=model, user_input=""):
 
     return extract_content(final_response)
 
+
 async def main():
     while True:
         user_input = input("> ")
@@ -127,6 +113,7 @@ async def main():
             break
         result = await run(model_name=model, user_input=user_input)
         print("Assistant:", result)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
