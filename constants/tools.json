@@ -14,51 +14,6 @@
   {
     "type": "function",
     "function": {
-      "name": "execute_python",
-      "description": "Execute Python code in a controlled environment and return the output, including stdout, stderr, and return values. The code execution is sandboxed using LangChain's PythonREPL.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "Python code to execute. Can include multiple lines and statements."
-          }
-        },
-        "required": [
-          "code"
-        ]
-      },
-      "examples": [
-        {
-          "input": {
-            "code": "print('Hello, world!')"
-          },
-          "output": "Output:\nHello, world!"
-        },
-        {
-          "input": {
-            "code": "x = 5\ny = 3\nprint(f'Sum: {x + y}')\nx + y"
-          },
-          "output": "Output:\nSum: 8\nResult:\n8"
-        },
-        {
-          "input": {
-            "code": "def factorial(n):\n    if n <= 1: return 1\n    return n * factorial(n-1)\nprint(factorial(5))"
-          },
-          "output": "Output:\n120"
-        },
-        {
-          "input": {
-            "code": "import this_module_does_not_exist"
-          },
-          "output": "Error executing code:\nTraceback (most recent call last):\n  ModuleNotFoundError: No module named 'this_module_does_not_exist'"
-        }
-      ]
-    }
-  },
-  {
-    "type": "function",
-    "function": {
       "name": "save_sea_level_data",
       "description": "Fetch sea level data for a given location and save it as a CSV file in the '../data' directory. If a file for the same station exists and is less than 30 days old, the download is skipped.",
       "parameters": {
@@ -185,6 +140,51 @@
             "end_year": 2006
           },
           "output": "Plotting sea level trend from 2001 to 2006"
+        }
+      ]
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "execute_python",
+      "description": "Execute Python code in a controlled environment and return the output, including stdout, stderr, and return values. The code execution is sandboxed using LangChain's PythonREPL. Use as a last resort, if no other predefined functions are available.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Python code to execute. Can include multiple lines and statements."
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "examples": [
+        {
+          "input": {
+            "code": "print('Hello, world!')"
+          },
+          "output": "Output:\nHello, world!"
+        },
+        {
+          "input": {
+            "code": "x = 5\ny = 3\nprint(f'Sum: {x + y}')\nx + y"
+          },
+          "output": "Output:\nSum: 8\nResult:\n8"
+        },
+        {
+          "input": {
+            "code": "def factorial(n):\n    if n <= 1: return 1\n    return n * factorial(n-1)\nprint(factorial(5))"
+          },
+          "output": "Output:\n120"
+        },
+        {
+          "input": {
+            "code": "import this_module_does_not_exist"
+          },
+          "output": "Error executing code:\nTraceback (most recent call last):\n  ModuleNotFoundError: No module named 'this_module_does_not_exist'"
         }
       ]
     }
