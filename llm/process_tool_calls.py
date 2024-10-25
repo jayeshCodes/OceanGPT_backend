@@ -9,7 +9,7 @@ tool_responses = []
 async def process_tool_calls(response):
     """
     process tool calls coming from the llm response
-    this function was created so that even an untrained llm which has the ability to execute function calls would be accomodated in this application
+    this function was created so that even an untrained llm which has the ability to execute function calls would be accommodated in this application
     """
     # Process tool calls
     try:

@@ -1,7 +1,6 @@
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
-import os
 from pathlib import Path
 
 try:
@@ -12,7 +11,7 @@ except ImportError:
     import get_station_lookup
 
 
-def save_sea_level_data(location: str) -> None:
+def save_sea_level_data(location: str) -> str:
     """
     Fetch sea level data for a given location and save it as a CSV file
     in the '../data' directory. If a file for the same station exists and
@@ -28,8 +27,7 @@ def save_sea_level_data(location: str) -> None:
     # Get station information
     station_info = get_station_lookup()
     if station_info.empty:
-        print("Failed to fetch station information")
-        return
+        return "Failed to fetch station information"
 
     # If input is not a station ID, try to find matching station
     if not location.isdigit() or len(location) != 7:
@@ -42,8 +40,7 @@ def save_sea_level_data(location: str) -> None:
                 station_info['name'].str.lower().str.contains(location.lower(), na=False)
             ]
             if not similar_stations.empty:
-                print(similar_stations[['name', 'state', 'station_id']].head())
-            return
+                return similar_stations[['name', 'state', 'station_id']].head()
     else:
         station_id = location
 
@@ -59,7 +56,7 @@ def save_sea_level_data(location: str) -> None:
         if file_age.days < 30:
             print(f"Using existing file: {most_recent_file}")
             print(f"File age: {file_age.days} days")
-            return
+            return f"Using existing file f{most_recent_file}"
         else:
             print(f"Existing file is {file_age.days} days old. Downloading new data...")
 
@@ -115,12 +112,17 @@ def save_sea_level_data(location: str) -> None:
         print(f"Data saved to: {filepath}")
         print(f"Station: {station_row['name']} ({station_id})")
 
+        return f"Data saved to: {filepath}\n Station {station_row['name']} ({station_id})]"
+
     except requests.RequestException as e:
         print(f"Failed to fetch data: {str(e)}")
+        return f"Failed to fetch data: {str(e)}"
     except ValueError as e:
         print(f"Error: {str(e)}")
+        return f"Error: {str(e)}"
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
+        return f"Unexpected error: {str(e)}"
 
 
 if __name__ == "__main__":
