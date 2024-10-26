@@ -13,6 +13,11 @@ For the purposes of this project, I have fine tuned the 3B parameter version of 
 
 For more information on fine tuning LLMs, visit [Unsloth](https://unsloth.ai/), which was used to fine tune llama3.2-3B in this project.
 
+## Architecture Diagram
+The following diagram illustrates the two-stage architecture in more detail:
+
+![img.png](img.png)
+
 ## What can OceanGPT do?
 OceanGPT has a wide range of capabilities : Ranging from general chat to data analysis using predefined functions, or entirely generating it's own code.
 
@@ -21,5 +26,3 @@ Some of it's functions are listed below:
 2. Perform analysis on the datasets such as, plotting sea level trends over the years and table manipulation.
 3. Running self-generated code during runtime to keep up with user demands.
 
-## Architecture Diagram
-![img.png](img.png)

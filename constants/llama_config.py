@@ -16,4 +16,7 @@ with open(tools_path, "r") as f:
 
 # assign variables here
 model = config[0]["model"]
-system = config[1]["system_prompt"] + f"Here are the tools you have available:\n {tools}"
+system = config[1]["system_prompt"] + f"Here are the tools you have available: {tools}"
+
+if __name__=="__main__":
+    print(system)

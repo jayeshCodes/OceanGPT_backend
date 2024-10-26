@@ -2,18 +2,6 @@
   {
     "type": "function",
     "function": {
-      "name": "say_hello",
-      "description": "Say hello",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    }
-  },
-  {
-    "type": "function",
-    "function": {
       "name": "save_sea_level_data",
       "description": "Fetch sea level data for a given location and save it as a CSV file in the '../data' directory. If a file for the same station exists and is less than 30 days old, the download is skipped.",
       "parameters": {
@@ -148,7 +136,7 @@
     "type": "function",
     "function": {
       "name": "execute_python",
-      "description": "Execute Python code in a controlled environment and return the output, including stdout, stderr, and return values. The code execution is sandboxed using LangChain's PythonREPL. Use as a last resort, if no other predefined functions are available.",
+      "description": "Execute Python code in a controlled environment, using langchain's PythonREPL and return the output, including stdout, stderr, and return values. The code execution is sandboxed using LangChain's PythonREPL. Use this strictly as a last resort, if no other predefined functions are available. DO NOT call this function if you know the answer from your own training!",
       "parameters": {
         "type": "object",
         "properties": {
