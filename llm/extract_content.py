@@ -9,7 +9,7 @@ def extract_content(final_response):
         try:
             # Try to load the content as JSON
             content = json.loads(content)
-            return content.get('text', content.get('content'))  # Handle both 'text' and 'content'
+            return content.get('message', content.get('content'))  # Handle both 'text' and 'content'
         except JSONDecodeError:
             return content  # Return the plain 'content' if it's not JSON
     except KeyError:

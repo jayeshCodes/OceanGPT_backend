@@ -2,6 +2,14 @@
   {
     "type": "function",
     "function": {
+      "name": "general_chat",
+      "description": "This function doesn't do anything. Use this for general chat purposes, which are unrelated to data analysis.",
+      "parameters" : {}
+    }
+  },
+  {
+    "type": "function",
+    "function": {
       "name": "save_sea_level_data",
       "description": "Fetch sea level data for a given location and save it as a CSV file in the '../data' directory. If a file for the same station exists and is less than 30 days old, the download is skipped.",
       "parameters": {
@@ -28,106 +36,6 @@
             "location": "Los Angeles"
           },
           "output": "Sea level data for Los Angeles saved to '../data/sea_level_stationID_timestamp.csv'"
-        }
-      ]
-    }
-  },
-  {
-    "type": "function",
-    "function": {
-      "name": "analyze_sea_level_data",
-      "description": "Analyze sea level data from the uploaded CSV file",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "operation": {
-            "type": "string",
-            "enum": [
-              "head",
-              "tail",
-              "describe"
-            ],
-            "description": "The operation to perform on the data"
-          },
-          "n": {
-            "type": "integer",
-            "description": "Number of rows to show for head or tail operations"
-          }
-        },
-        "required": [
-          "operation"
-        ]
-      },
-      "examples": [
-        {
-          "input": {
-            "operation": "head",
-            "n": 5
-          },
-          "output": "Showing the first 5 rows of the sea level data: "
-        },
-        {
-          "input": {
-            "operation": "tail",
-            "n": 5
-          },
-          "output": "Showing the last 5 rows of the sea level data: "
-        },
-        {
-          "input": {
-            "operation": "describe"
-          },
-          "output": "Descriptive statistics of the sea level data: "
-        }
-      ]
-    }
-  },
-  {
-    "type": "function",
-    "function": {
-      "name": "plot_sea_level_trend",
-      "description": "Plot sea level trend from the uploaded CSV file",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "x_column": {
-            "type": "string",
-            "description": "The column to use for the x-axis"
-          },
-          "y_column": {
-            "type": "string",
-            "description": "The column to use for the y-axis"
-          },
-          "start_year": {
-            "type": "integer",
-            "description": "The start year for filtering the data (optional)"
-          },
-          "end_year": {
-            "type": "integer",
-            "description": "The end year for filtering the data (optional)"
-          }
-        },
-        "required": [
-          "x_column",
-          "y_column"
-        ]
-      },
-      "examples": [
-        {
-          "input": {
-            "x_column": "date",
-            "y_column": "sea_level"
-          },
-          "output": "Plotting sea level trend for the entire dataset"
-        },
-        {
-          "input": {
-            "x_column": "date",
-            "y_column": "sea_level",
-            "start_year": 2001,
-            "end_year": 2006
-          },
-          "output": "Plotting sea level trend from 2001 to 2006"
         }
       ]
     }

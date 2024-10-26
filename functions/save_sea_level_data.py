@@ -11,7 +11,7 @@ except ImportError:
     import get_station_lookup
 
 
-def save_sea_level_data(location: str) -> str:
+def save_sea_level_data(location) -> str:
     """
     Fetch sea level data for a given location and save it as a CSV file
     in the '../data' directory. If a file for the same station exists and
@@ -20,6 +20,8 @@ def save_sea_level_data(location: str) -> str:
     Args:
         location (str): Location name or station ID
     """
+    location = str(location)
+    print(location)
     # Create data directory if it doesn't exist
     data_dir = Path(__file__).parent.parent / 'data'
     data_dir.mkdir(exist_ok=True)
