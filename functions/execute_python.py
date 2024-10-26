@@ -1,6 +1,5 @@
 # functions/execute_python.py
 import asyncio
-
 from langchain_core.tools import Tool
 from langchain_experimental.utilities import PythonREPL
 import sys
@@ -11,7 +10,7 @@ import traceback
 
 async def execute_python(code: str) -> str:
     """
-    Execute Python code in a controlled environment using LangChain's PythonREPL.
+    Execute Python code asynchronously in a controlled environment using LangChain's PythonREPL.
 
     Args:
         code (str): Python code to execute
@@ -27,10 +26,14 @@ async def execute_python(code: str) -> str:
     stderr_buffer = io.StringIO()
 
     try:
-        # Redirect stdout and stderr to our buffers
+        # Run the potentially blocking code execution in a thread pool
+        loop = asyncio.get_event_loop()
+        # Redirect stdout and stderr to our buffers and execute code
         with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
-            # Execute the code
-            result = python_repl.run(code)
+            result = await loop.run_in_executor(
+                None,
+                lambda: python_repl.run(code)
+            )
 
         # Get the output and errors
         output = stdout_buffer.getvalue()
@@ -45,6 +48,7 @@ async def execute_python(code: str) -> str:
         if result:
             full_output += f"Result:\n{result}"
 
+        # If there's no output at all, provide a success message
         return full_output.strip() or "Code executed successfully with no output"
 
     except Exception as e:
@@ -57,9 +61,11 @@ async def execute_python(code: str) -> str:
         stdout_buffer.close()
         stderr_buffer.close()
 
+
 async def main():
     result = await execute_python("print('hello world')")
     print(result)
+
 
 if __name__ == '__main__':
     asyncio.run(main())

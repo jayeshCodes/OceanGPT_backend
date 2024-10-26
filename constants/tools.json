@@ -2,58 +2,9 @@
   {
     "type": "function",
     "function": {
-      "name": "say_hello",
-      "description": "Say hello",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    }
-  },
-  {
-    "type": "function",
-    "function": {
-      "name": "execute_python",
-      "description": "Execute Python code in a controlled environment and return the output, including stdout, stderr, and return values. The code execution is sandboxed using LangChain's PythonREPL.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "Python code to execute. Can include multiple lines and statements."
-          }
-        },
-        "required": [
-          "code"
-        ]
-      },
-      "examples": [
-        {
-          "input": {
-            "code": "print('Hello, world!')"
-          },
-          "output": "Output:\nHello, world!"
-        },
-        {
-          "input": {
-            "code": "x = 5\ny = 3\nprint(f'Sum: {x + y}')\nx + y"
-          },
-          "output": "Output:\nSum: 8\nResult:\n8"
-        },
-        {
-          "input": {
-            "code": "def factorial(n):\n    if n <= 1: return 1\n    return n * factorial(n-1)\nprint(factorial(5))"
-          },
-          "output": "Output:\n120"
-        },
-        {
-          "input": {
-            "code": "import this_module_does_not_exist"
-          },
-          "output": "Error executing code:\nTraceback (most recent call last):\n  ModuleNotFoundError: No module named 'this_module_does_not_exist'"
-        }
-      ]
+      "name": "general_chat",
+      "description": "This function doesn't do anything. Use this for general chat purposes, which are unrelated to data analysis.",
+      "parameters" : {}
     }
   },
   {
@@ -92,99 +43,44 @@
   {
     "type": "function",
     "function": {
-      "name": "analyze_sea_level_data",
-      "description": "Analyze sea level data from the uploaded CSV file",
+      "name": "execute_python",
+      "description": "Execute Python code in a controlled environment, using langchain's PythonREPL and return the output, including stdout, stderr, and return values. The code execution is sandboxed using LangChain's PythonREPL. Use this strictly as a last resort, if no other predefined functions are available. DO NOT call this function if you know the answer from your own training!",
       "parameters": {
         "type": "object",
         "properties": {
-          "operation": {
+          "code": {
             "type": "string",
-            "enum": [
-              "head",
-              "tail",
-              "describe"
-            ],
-            "description": "The operation to perform on the data"
-          },
-          "n": {
-            "type": "integer",
-            "description": "Number of rows to show for head or tail operations"
+            "description": "Python code to execute. Can include multiple lines and statements."
           }
         },
         "required": [
-          "operation"
+          "code"
         ]
       },
       "examples": [
         {
           "input": {
-            "operation": "head",
-            "n": 5
+            "code": "print('Hello, world!')"
           },
-          "output": "Showing the first 5 rows of the sea level data: "
+          "output": "Output:\nHello, world!"
         },
         {
           "input": {
-            "operation": "tail",
-            "n": 5
+            "code": "x = 5\ny = 3\nprint(f'Sum: {x + y}')\nx + y"
           },
-          "output": "Showing the last 5 rows of the sea level data: "
+          "output": "Output:\nSum: 8\nResult:\n8"
         },
         {
           "input": {
-            "operation": "describe"
+            "code": "def factorial(n):\n    if n <= 1: return 1\n    return n * factorial(n-1)\nprint(factorial(5))"
           },
-          "output": "Descriptive statistics of the sea level data: "
-        }
-      ]
-    }
-  },
-  {
-    "type": "function",
-    "function": {
-      "name": "plot_sea_level_trend",
-      "description": "Plot sea level trend from the uploaded CSV file",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "x_column": {
-            "type": "string",
-            "description": "The column to use for the x-axis"
-          },
-          "y_column": {
-            "type": "string",
-            "description": "The column to use for the y-axis"
-          },
-          "start_year": {
-            "type": "integer",
-            "description": "The start year for filtering the data (optional)"
-          },
-          "end_year": {
-            "type": "integer",
-            "description": "The end year for filtering the data (optional)"
-          }
-        },
-        "required": [
-          "x_column",
-          "y_column"
-        ]
-      },
-      "examples": [
-        {
-          "input": {
-            "x_column": "date",
-            "y_column": "sea_level"
-          },
-          "output": "Plotting sea level trend for the entire dataset"
+          "output": "Output:\n120"
         },
         {
           "input": {
-            "x_column": "date",
-            "y_column": "sea_level",
-            "start_year": 2001,
-            "end_year": 2006
+            "code": "import this_module_does_not_exist"
           },
-          "output": "Plotting sea level trend from 2001 to 2006"
+          "output": "Error executing code:\nTraceback (most recent call last):\n  ModuleNotFoundError: No module named 'this_module_does_not_exist'"
         }
       ]
     }

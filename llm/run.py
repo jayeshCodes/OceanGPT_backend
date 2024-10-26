@@ -1,137 +1,80 @@
+"""main entry point for llm or console based application"""
+
 """imports"""
 import asyncio
 import os
-import uuid
-from datetime import datetime, timedelta
-import logging
-
-import chromadb
-import ollama
-
+from typing import List, Optional
 from constants.llama_config import model, system, tools
+from llm.chat_manager import ChatManager
+from llm.db_manager import DatabaseManager
+from llm.file_tracker import FileTracker
+from llm.models.message import Message
+from llm.config import Config
+from llm.utils.logging_config import setup_logging
+from process_tool_calls import process_tool_calls
+from extract_content import extract_content
 
-try:
-    from llm.execute_tool import execute_tool
-    from llm.delete_old_entries import delete_old_entries
-    from llm.extract_content import extract_content
-    from llm.process_tool_calls import process_tool_calls
-except ImportError:
-    from execute_tool import execute_tool
-    from delete_old_entries import delete_old_entries
-    from extract_content import extract_content
-    from process_tool_calls import process_tool_calls
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Set environment variables before any imports or client initialization
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
-# init chromadb with persistent storage to store conversation history
-chroma_client = chromadb.PersistentClient(path="../chroma_db")
-collection = chroma_client.get_or_create_collection(name="conversation_history")
+logger = setup_logging()
 
 
-async def run(model_name=model, user_input=""):
-    """run the large language model"""
-    try:
-        client = ollama.AsyncClient()
-        system_prompt = system
+class LLMRunner:
+    def __init__(self):
+        os.environ["TOKENIZERS_PARALLELISM"] = Config.TOKENIZERS_PARALLELISM
+        self.db_manager = DatabaseManager()
+        self.chat_manager = ChatManager(model, system)
+        self.file_tracker = FileTracker(self.db_manager)
 
-        # Retrieve recent conversation history
-        results = collection.query(
-            query_texts=[user_input],
-            n_results=7,
-            where={"timestamp": {"$gte": (datetime.now() - timedelta(days=7)).timestamp()}}
-        )
+    async def run(self, user_input: str) -> str:
+       try:
+           # Scan CSV files
+           self.file_tracker.scan_csv_files()
 
-        conversation_history = ""
-        if results['documents'] and len(results['documents'][0]) > 0:
-            conversation_history = "\n".join(results['documents'][0])
+           # Get conversation history
+           conversation_history = self.db_manager.get_recent_conversations(user_input)
 
-        # Include the user input in the initial messages
-        message = [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "system",
-                "content": f"Recent conversation history:\n{conversation_history}"
-            },
-            {
-                "role": "user",
-                "content": user_input
-            }
-        ]
+           # Prepare initial messages
+           messages = [
+               Message(role="system", content=system),
+               Message(role="system", content=f"Recent conversation history:\n{conversation_history}"),
+               Message(role="user", content=user_input)
+           ]
 
-        # First call to check for tool usage
-        try:
-            response = await client.chat(
-                model=model_name,
-                messages=message,
-                format="json",
-                tools=tools,
-                stream=False
-            )
-            logger.debug(f"Initial response: {response}")
-        except Exception as e:
-            logger.error(f"Error in initial model call: {e}")
-            raise
+           # Get initial response and process tool calls
+           initial_response = await self.chat_manager.get_initial_response(messages, tools)
+           print(f"init: {initial_response}\n")
+           tool_responses = await process_tool_calls(initial_response)
+           print(f"tool responses: {tool_responses}\n")
 
-        print(response)
-        tool_responses = await process_tool_calls(response)
+           # Add successful tool responses to messages
+           for tool_response in tool_responses:
+               if "error" not in tool_response:
+                   messages.append(Message(
+                       role="function",
+                       name=tool_response["tool_name"],
+                       content=tool_response["result"]
+                   ))
+               else:
+                   logger.warning(f"Skipping tool response due to error: {tool_response["error"]}")
 
-        # Construct final message including tool responses
-        final_message = message.copy()
+           # Get and process final response
+           final_response = await self.chat_manager.get_final_response(messages)
+           print(f"final response: {final_response}\n")
+           self.db_manager.store_conversation(user_input, final_response)
 
-        if tool_responses:
-            for tool_response in tool_responses:
-                final_message.append({
-                    "role": "function",
-                    "name": tool_response["tool_name"],
-                    "content": tool_response.get("result", str(tool_response.get("error")))
-                })
+           return extract_content(final_response)
 
-        # Get final response
-        try:
-            final_response = await client.chat(
-                model=model_name,
-                messages=final_message,
-                stream=False
-            )
-        except Exception as e:
-            logger.error(f"Error in final model call: {e}")
-            raise
-
-        # Store conversation in collection
-        try:
-            collection.add(
-                documents=[f"User: {user_input}\nAssistant: {final_response}"],
-                ids=[str(uuid.uuid4())],
-                metadatas=[{"timestamp": datetime.now().timestamp()}]
-            )
-            delete_old_entries(collection)
-        except Exception as e:
-            logger.error(f"Error storing conversation: {e}")
-            # Don't raise here as we still want to return the response
-
-        return extract_content(final_response)
-
-    except Exception as e:
-        logger.error(f"Error in run function: {e}")
-        return f"An error occurred: {str(e)}"
-
+       except Exception as e:
+           logger.error(f"Error in the run function: {e}")
+           return f"Error in the run function: {str(e)}"
 
 async def main():
-    """Main function for CLI usage"""
+    runner = LLMRunner()
     while True:
         try:
             user_input = input("> ")
             if user_input.lower() == "exit":
                 break
-            result = await run(model_name=model, user_input=user_input)
+            result = await runner.run(user_input)
             print("Assistant:", result)
         except KeyboardInterrupt:
             print("\nExiting...")
@@ -140,10 +83,7 @@ async def main():
             logger.error(f"Error in main loop: {e}")
             print(f"An error occurred: {str(e)}")
 
-
 if __name__ == "__main__":
-    # Set up event loop policy for Windows if needed
     if os.name == 'nt':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
     asyncio.run(main())
