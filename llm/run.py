@@ -47,7 +47,7 @@ class LLMRunner:
 
            # Add successful tool responses to messages
            for tool_response in tool_responses:
-               if "error" not in tool_response:
+               if "error" not in tool_response and "SKIP" not in tool_response:
                    messages.append(Message(
                        role="function",
                        name=tool_response["tool_name"],
